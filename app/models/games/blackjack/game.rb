@@ -19,8 +19,9 @@ module Games
       def deal!
         raise InvalidActionError if @round && !@round.finished?
 
-        @round = Round.new(shoe: @shoe)
-        @round.start!
+        round = Round.new(shoe: @shoe)
+        round.start!
+        @round = round
         self
       end
 

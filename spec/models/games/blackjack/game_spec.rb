@@ -22,6 +22,17 @@ RSpec.describe Games::Blackjack::Game do
     expect(game.remaining_cards).to eq([])
   end
 
+  it "leaves the finished round alone when the shoe is too short to deal" do
+    leftover = [ card(2), card(3), card(4) ]
+    game = started_game(card("A"), card(9), card("K"), card(7), *leftover)
+
+    expect { game.deal! }.to raise_error(Games::Blackjack::Shoe::EmptyError)
+    expect(game.player_hand.cards).to eq([ card("A"), card("K") ])
+    expect(game.dealer_hand.cards).to eq([ card(9), card(7) ])
+    expect(game).to be_finished
+    expect(game.remaining_cards).to eq(leftover)
+  end
+
   it "rejects dealing until the current round is over" do
     game = started_game(card(10), card(9), card(7), card(6))
 

@@ -2,8 +2,6 @@
 
 module Games
   module Blackjack
-    # Assumes the injected shoe has enough cards for the round.
-    # If the shoe runs out mid-deal, Round does not roll back partial hands.
     class Round
       class InvalidActionError < StandardError; end
 
@@ -29,6 +27,7 @@ module Games
 
       def start!
         require_state!(:pending)
+        raise Shoe::EmptyError if @shoe.remaining < 4
 
         2.times do
           @player_hand.add_card(@shoe.draw)

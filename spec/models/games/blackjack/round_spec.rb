@@ -45,6 +45,17 @@ RSpec.describe Games::Blackjack::Round do
     expect(player_bj.legal_actions).to eq([])
   end
 
+  it "does not deal from a short shoe" do
+    shoe = shoe_with(card(10), card(9), card(7))
+    round = described_class.new(shoe: shoe)
+
+    expect { round.start! }.to raise_error(Games::Blackjack::Shoe::EmptyError)
+    expect(round.player_hand.cards).to eq([])
+    expect(round.dealer_hand.cards).to eq([])
+    expect(round.state).to eq(:pending)
+    expect(shoe.remaining).to eq(3)
+  end
+
   it "rejects starting twice" do
     round = started_round(card(10), card(9), card(7), card(6))
 
