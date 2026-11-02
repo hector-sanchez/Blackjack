@@ -1,0 +1,58 @@
+<div class="table">
+  <header class="table__header">
+    <h1>Blackjack</h1>
+    <% if @game[:outcome] %>
+      <p class="banner"><%= outcome_label(@game[:outcome]) %></p>
+    <% end %>
+  </header>
+
+  <section class="seat <%= "seat--winner" if winning_seat?(:dealer, @game[:outcome]) %>">
+    <div class="seat__heading">
+      <h2>Dealer</h2>
+      <% if winning_seat?(:dealer, @game[:outcome]) %>
+        <span class="winner-mark" aria-label="Winner">✓</span>
+      <% end %>
+    </div>
+    <ul class="hand">
+      <% @game[:dealer_cards].each do |card| %>
+        <% if card[:hidden] %>
+          <li class="card card--facedown"><span class="visually-hidden">Face down</span></li>
+        <% else %>
+          <li class="card <%= card_color_class(card[:suit]) %>">
+            <span class="card__rank"><%= card[:rank] %></span>
+            <span class="card__suit"><%= suit_symbol(card[:suit]) %></span>
+          </li>
+        <% end %>
+      <% end %>
+    </ul>
+  </section>
+
+  <section class="seat <%= "seat--winner" if winning_seat?(:player, @game[:outcome]) %>">
+    <div class="seat__heading">
+      <h2>You</h2>
+      <% if winning_seat?(:player, @game[:outcome]) %>
+        <span class="winner-mark" aria-label="Winner">✓</span>
+      <% end %>
+    </div>
+    <ul class="hand">
+      <% @game[:player_cards].each do |card| %>
+        <li class="card <%= card_color_class(card[:suit]) %>">
+          <span class="card__rank"><%= card[:rank] %></span>
+          <span class="card__suit"><%= suit_symbol(card[:suit]) %></span>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+
+  <div class="actions">
+    <% if @game[:legal_actions].include?("hit") %>
+      <%= button_to "Hit", hit_blackjack_session_path(@game_session) %>
+    <% end %>
+
+    <% if @game[:legal_actions].include?("stand") %>
+      <%= button_to "Stand", stand_blackjack_session_path(@game_session) %>
+    <% end %>
+
+    <%= button_to "Deal again", blackjack_sessions_path, class: (@game[:outcome] ? "button--primary" : "button--quiet") %>
+  </div>
+</div>

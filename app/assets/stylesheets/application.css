@@ -1,10 +1,168 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  background: #0b3d2e;
+  color: #f4f1ea;
+}
+
+.table {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.table__header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.table__header h1 {
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.04em;
+}
+
+.lede {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.banner {
+  display: inline-block;
+  margin: 0.75rem 0 0;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  background: #f4f1ea;
+  color: #0b3d2e;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.seat {
+  position: relative;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem 1.25rem;
+  border: 1px solid rgba(244, 241, 234, 0.15);
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.seat--winner {
+  border-color: #8ce99a;
+  background: rgba(140, 233, 154, 0.12);
+}
+
+.seat__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.seat__heading h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.winner-mark {
+  font-size: 3rem;
+  line-height: 0.8;
+  color: #8ce99a;
+}
+
+.hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 5.5rem;
+  min-height: 7.75rem;
+  padding: 0.55rem 0.45rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 0.45rem;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.card__rank {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.card__suit {
+  align-self: flex-end;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.card--red {
+  color: #c92a2a;
+}
+
+.card--black {
+  color: #1a1b1e;
+}
+
+.card--facedown {
+  background: repeating-linear-gradient(
+    45deg,
+    #1d4e89,
+    #1d4e89 8px,
+    #163a66 8px,
+    #163a66 16px
+  );
+  border-color: #0d2b4d;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.actions form {
+  margin: 0;
+}
+
+.actions button {
+  min-width: 6.5rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid rgba(244, 241, 234, 0.35);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.button--primary {
+  background: #f4f1ea;
+  color: #0b3d2e;
+  border-color: #f4f1ea;
+  font-weight: 700;
+}
+
+.button--quiet {
+  opacity: 0.7;
+}
