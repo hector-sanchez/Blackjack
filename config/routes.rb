@@ -8,6 +8,7 @@ Rails.application.routes.draw do
       member do
         post :hit
         post :stand
+        post :deal
       end
     end
   end

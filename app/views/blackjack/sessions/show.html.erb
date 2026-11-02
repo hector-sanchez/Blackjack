@@ -53,6 +53,8 @@
       <%= button_to "Stand", stand_blackjack_session_path(@game_session) %>
     <% end %>
 
-    <%= button_to "Deal again", blackjack_sessions_path, class: (@game[:outcome] ? "button--primary" : "button--quiet") %>
+    <% if @game[:outcome] %>
+      <%= button_to "Deal again", deal_blackjack_session_path(@game_session), class: "button--primary" %>
+    <% end %>
   </div>
 </div>

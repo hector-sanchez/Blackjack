@@ -39,12 +39,17 @@ module Games
           end
         end
 
+        shoe = Shoe.new(cards: build_cards.call(data.fetch("remaining_cards")))
+
         Game.restore(
-          shoe: Shoe.new(cards: build_cards.call(data.fetch("remaining_cards"))),
-          player_hand: Hand.new(build_cards.call(data.fetch("player_cards"))),
-          dealer_hand: Hand.new(build_cards.call(data.fetch("dealer_cards"))),
-          state: data.fetch("state").to_sym,
-          outcome: data["outcome"]&.to_sym
+          shoe: shoe,
+          round: Round.restore(
+            shoe: shoe,
+            player_hand: Hand.new(build_cards.call(data.fetch("player_cards"))),
+            dealer_hand: Hand.new(build_cards.call(data.fetch("dealer_cards"))),
+            state: data.fetch("state").to_sym,
+            outcome: data["outcome"]&.to_sym
+          )
         )
       end
 

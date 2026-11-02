@@ -5,11 +5,11 @@ module Games
     class SessionManager
       def self.start!
         game = Game.new
-        game.start!
+        game.deal!
 
         GameSession.create!(
           state: GameSerializer.new(game).to_snapshot_h,
-          status: game.finished? ? "completed" : "active"
+          status: "active"
         )
       end
 
@@ -25,6 +25,10 @@ module Games
         perform_action!(session, :stand)
       end
 
+      def self.deal!(session)
+        perform_action!(session, :deal)
+      end
+
       def self.perform_action!(session, action)
         session.with_lock do
           game = load(session)
@@ -34,11 +38,13 @@ module Games
             game.hit!
           when :stand
             game.stand!
+          when :deal
+            game.deal!
           end
 
           session.update!(
             state: GameSerializer.new(game).to_snapshot_h,
-            status: game.finished? ? "completed" : "active"
+            status: "active"
           )
 
           game

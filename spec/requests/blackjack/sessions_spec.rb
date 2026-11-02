@@ -10,7 +10,7 @@ RSpec.describe "Blackjack::Sessions", type: :request do
     game_session = GameSession.last
     game_session.update!(
       state: Games::Blackjack::GameSerializer.new(game).to_snapshot_h,
-      status: game.finished? ? "completed" : "active"
+      status: "active"
     )
     game_session
   end
@@ -24,7 +24,7 @@ RSpec.describe "Blackjack::Sessions", type: :request do
       expect(response).to redirect_to(blackjack_session_path(game_session))
     end
 
-    it "starts a new owned game when dealing again" do
+    it "sitting down again starts a new session" do
       first = persist_owned_game(10, 9, 7, 6)
 
       post blackjack_sessions_path
@@ -104,6 +104,23 @@ RSpec.describe "Blackjack::Sessions", type: :request do
       expect(response.body).to include("You win")
       expect(response.body).not_to include("Face down")
     end
+
+    it "deals the next round from the leftover shoe" do
+      game_session = persist_owned_game("A", 9, "K", 7, 10, 8, 5, 6)
+
+      expect { post deal_blackjack_session_path(game_session) }
+        .not_to change(GameSession, :count)
+
+      expect(response).to redirect_to(blackjack_session_path(game_session))
+
+      get blackjack_session_path(game_session)
+      expect(response.body).to include(">10<")
+      expect(response.body).to include(">5<")
+      expect(response.body).to include(">8<")
+      expect(response.body).to include("Face down")
+      expect(response.body).not_to include(">6<")
+      expect(response.body).not_to include("You win")
+    end
   end
 
   describe "invalid actions" do
@@ -116,13 +133,16 @@ RSpec.describe "Blackjack::Sessions", type: :request do
 
       post stand_blackjack_session_path(other)
       expect(response).to have_http_status(:not_found)
+
+      post deal_blackjack_session_path(other)
+      expect(response).to have_http_status(:not_found)
     end
 
     it "rejects a hit after the round is over" do
       game_session = persist_owned_game("A", 9, "K", 7)
 
       expect { post hit_blackjack_session_path(game_session) }
-        .to raise_error(Games::Blackjack::Game::InvalidActionError)
+        .to raise_error(Games::Blackjack::Round::InvalidActionError)
     end
 
     it "rejects a hit when only stand is legal" do
@@ -130,6 +150,13 @@ RSpec.describe "Blackjack::Sessions", type: :request do
       post hit_blackjack_session_path(game_session)
 
       expect { post hit_blackjack_session_path(game_session) }
+        .to raise_error(Games::Blackjack::Round::InvalidActionError)
+    end
+
+    it "rejects dealing until the current round is over" do
+      game_session = persist_owned_game(10, 9, 7, 6)
+
+      expect { post deal_blackjack_session_path(game_session) }
         .to raise_error(Games::Blackjack::Game::InvalidActionError)
     end
   end

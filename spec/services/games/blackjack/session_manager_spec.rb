@@ -8,7 +8,7 @@ RSpec.describe Games::Blackjack::SessionManager do
 
     GameSession.create!(
       state: Games::Blackjack::GameSerializer.new(game).to_snapshot_h,
-      status: game.finished? ? "completed" : "active"
+      status: "active"
     )
   end
 
@@ -21,7 +21,7 @@ RSpec.describe Games::Blackjack::SessionManager do
 
       expect(game.player_hand.cards.size).to eq(2)
       expect(game.dealer_hand.cards.size).to eq(2)
-      expect(session.status).to eq(game.finished? ? "completed" : "active")
+      expect(session.status).to eq("active")
     end
   end
 
@@ -45,7 +45,20 @@ RSpec.describe Games::Blackjack::SessionManager do
 
       restored = described_class.load(session.reload)
       expect(restored.outcome).to eq(:player_win)
-      expect(session.status).to eq("completed")
+      expect(session.status).to eq("active")
+    end
+  end
+
+  describe ".deal!" do
+    it "deals the next round from the leftover shoe" do
+      session = create_session(card("A"), card(9), card("K"), card(7), card(10), card(8), card(5), card(6))
+
+      described_class.deal!(session)
+
+      restored = described_class.load(session.reload)
+      expect(restored.player_hand.cards).to eq([ card(10), card(5) ])
+      expect(restored.dealer_hand.cards).to eq([ card(8), card(6) ])
+      expect(session.status).to eq("active")
     end
   end
 
@@ -53,7 +66,7 @@ RSpec.describe Games::Blackjack::SessionManager do
     session = create_session(card("A"), card(9), card("K"), card(7))
     original_state = session.state.deep_dup
 
-    expect { described_class.hit!(session) }.to raise_error(Games::Blackjack::Game::InvalidActionError)
+    expect { described_class.hit!(session) }.to raise_error(Games::Blackjack::Round::InvalidActionError)
     expect(session.reload.state).to eq(original_state)
   end
 end

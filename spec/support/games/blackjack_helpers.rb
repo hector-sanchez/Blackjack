@@ -18,9 +18,15 @@ module Games
       Games::Blackjack::Hand.new(ranks.map { |rank| card(rank) })
     end
 
+    def started_round(*cards)
+      round = Games::Blackjack::Round.new(shoe: shoe_with(*cards))
+      round.start!
+      round
+    end
+
     def started_game(*cards)
       game = Games::Blackjack::Game.new(shoe: shoe_with(*cards))
-      game.start!
+      game.deal!
       game
     end
   end

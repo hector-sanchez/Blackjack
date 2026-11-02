@@ -2,7 +2,7 @@
 
 module Blackjack
   class SessionsController < ApplicationController
-    before_action :set_session, only: %i[show hit stand]
+    before_action :set_session, only: %i[show hit stand deal]
 
     def create
       game_session = Games::Blackjack::SessionManager.start!
@@ -24,6 +24,12 @@ module Blackjack
 
     def stand
       Games::Blackjack::SessionManager.stand!(@game_session)
+
+      redirect_to blackjack_session_path(@game_session)
+    end
+
+    def deal
+      Games::Blackjack::SessionManager.deal!(@game_session)
 
       redirect_to blackjack_session_path(@game_session)
     end

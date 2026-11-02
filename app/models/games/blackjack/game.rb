@@ -2,75 +2,66 @@
 
 module Games
   module Blackjack
-    # Assumes the injected shoe has enough cards for the round.
-    # If the shoe runs out mid-deal, Game does not roll back partial hands.
     class Game
       class InvalidActionError < StandardError; end
 
-      attr_reader :player_hand, :dealer_hand, :state, :outcome
+      attr_reader :round
 
-      def initialize(shoe: nil, player_hand: nil, dealer_hand: nil, state: :pending, outcome: nil)
+      def initialize(shoe: nil, round: nil)
         @shoe = shoe || Shoe.new
-        @player_hand = player_hand || Hand.new
-        @dealer_hand = dealer_hand || Hand.new
-        @state = state
-        @outcome = outcome
+        @round = round
       end
 
-      def self.restore(shoe:, player_hand:, dealer_hand:, state:, outcome:)
-        new(
-          shoe: shoe,
-          player_hand: player_hand,
-          dealer_hand: dealer_hand,
-          state: state,
-          outcome: outcome
-        )
+      def self.restore(shoe:, round:)
+        new(shoe: shoe, round: round)
       end
 
-      def start!
-        require_state!(:pending)
+      def deal!
+        raise InvalidActionError if @round && !@round.finished?
 
-        2.times do
-          @player_hand.add_card(@shoe.draw)
-          @dealer_hand.add_card(@shoe.draw)
-        end
-
-        if @player_hand.blackjack? || @dealer_hand.blackjack?
-          finish!(Rules.outcome(@player_hand, @dealer_hand))
-        else
-          @state = :player_turn
-        end
+        @round = Round.new(shoe: @shoe)
+        @round.start!
+        self
       end
 
       def hit!
-        require_player_action!(:hit)
-
-        @player_hand.add_card(@shoe.draw)
-        finish!(:dealer_win) if @player_hand.busted?
+        current_round.hit!
       end
 
       def stand!
-        require_player_action!(:stand)
+        current_round.stand!
+      end
 
-        @dealer_hand.add_card(@shoe.draw) while Rules.dealer_hits?(@dealer_hand)
-        finish!(Rules.outcome(@player_hand, @dealer_hand))
+      def player_hand
+        current_round.player_hand
+      end
+
+      def dealer_hand
+        current_round.dealer_hand
+      end
+
+      def state
+        current_round.state
+      end
+
+      def outcome
+        current_round.outcome
       end
 
       def legal_actions
-        return [] unless @state == :player_turn
+        return [] unless @round
 
-        Rules.legal_actions(@player_hand)
+        @round.legal_actions
       end
 
       def finished?
-        @state == :finished
+        @round&.finished? || false
       end
 
       def visible_dealer_cards
-        return [] if @state == :pending
-        return @dealer_hand.cards if finished?
+        return [] unless @round
 
-        [ @dealer_hand.cards.first ]
+        @round.visible_dealer_cards
       end
 
       def remaining_cards
@@ -79,18 +70,10 @@ module Games
 
       private
 
-      def require_player_action!(action)
-        require_state!(:player_turn)
-        raise InvalidActionError unless legal_actions.include?(action)
-      end
+      def current_round
+        raise InvalidActionError unless @round
 
-      def require_state!(expected)
-        raise InvalidActionError unless @state == expected
-      end
-
-      def finish!(result)
-        @outcome = result
-        @state = :finished
+        @round
       end
     end
   end
