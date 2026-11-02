@@ -3,126 +3,93 @@
 require "rails_helper"
 
 RSpec.describe Games::Blackjack::Game do
-  describe "#initialize" do
-    it "starts pending with empty hands" do
-      game = described_class.new(deck: deck_with)
+  it "starts pending, deals alternately, and leaves the leftover cards" do
+    leftover = card(2)
+    pending = described_class.new(shoe: shoe_with)
 
-      expect(game.state).to eq(:pending)
-      expect(game.player_hand.cards).to eq([])
-      expect(game.dealer_hand.cards).to eq([])
-      expect(game.outcome).to eq(nil)
-    end
+    expect(pending.state).to eq(:pending)
+    expect(pending.player_hand.cards).to eq([])
+    expect(pending.dealer_hand.cards).to eq([])
+    expect(pending.outcome).to eq(nil)
+
+    game = started_game(card(10), card(9), card(7), card(6), leftover)
+
+    expect(game.player_hand.cards).to eq([ card(10), card(7) ])
+    expect(game.dealer_hand.cards).to eq([ card(9), card(6) ])
+    expect(game.state).to eq(:player_turn)
+    expect(game.remaining_cards).to eq([ leftover ])
+    expect(game.legal_actions).to eq([ :hit, :stand ])
   end
 
-  describe ".restore" do
-    it "rebuilds a mid-turn game without dealing" do
-      leftover = card(3)
-      game = described_class.restore(
-        deck: deck_with(leftover),
-        player_hand: hand_with(10, 7),
-        dealer_hand: hand_with(9, 6),
-        state: :player_turn,
-        outcome: nil
-      )
+  it "restores a mid-turn game without dealing" do
+    leftover = card(3)
+    game = described_class.restore(
+      shoe: shoe_with(leftover),
+      player_hand: hand_with(10, 7),
+      dealer_hand: hand_with(9, 6),
+      state: :player_turn,
+      outcome: nil
+    )
 
-      expect(game.state).to eq(:player_turn)
-      expect(game.player_hand.cards).to eq([ card(10), card(7) ])
-      expect(game.dealer_hand.cards).to eq([ card(9), card(6) ])
-      expect(game.remaining_cards).to eq([ leftover ])
-    end
+    expect(game.state).to eq(:player_turn)
+    expect(game.player_hand.cards).to eq([ card(10), card(7) ])
+    expect(game.dealer_hand.cards).to eq([ card(9), card(6) ])
+    expect(game.remaining_cards).to eq([ leftover ])
   end
 
-  describe "#start!" do
-    it "deals two cards to each participant in alternating order" do
-      game = started_game(card(10), card(9), card(7), card(6))
+  it "finishes immediately on a natural blackjack" do
+    player_bj = started_game(card("A"), card(9), card("K"), card(7))
+    dealer_bj = started_game(card(10), card("A"), card(9), card("K"))
 
-      expect(game.player_hand.cards).to eq([ card(10), card(7) ])
-      expect(game.dealer_hand.cards).to eq([ card(9), card(6) ])
-      expect(game.state).to eq(:player_turn)
-    end
-
-    it "finishes immediately on a natural blackjack" do
-      player_bj = started_game(card("A"), card(9), card("K"), card(7))
-      expect(player_bj.outcome).to eq(:player_win)
-
-      dealer_bj = started_game(card(10), card("A"), card(9), card("K"))
-      expect(dealer_bj.outcome).to eq(:dealer_win)
-    end
-
-    it "rejects starting twice" do
-      game = started_game(card(10), card(9), card(7), card(6))
-
-      expect { game.start! }.to raise_error(Games::Blackjack::Game::InvalidActionError)
-    end
+    expect(player_bj.outcome).to eq(:player_win)
+    expect(dealer_bj.outcome).to eq(:dealer_win)
+    expect(player_bj.legal_actions).to eq([])
   end
 
-  describe "#hit!" do
-    it "adds one card and continues unless the player busts" do
-      extra = card(3)
-      game = started_game(card(10), card(9), card(2), card(8), extra)
-      game.hit!
+  it "rejects starting twice" do
+    game = started_game(card(10), card(9), card(7), card(6))
 
-      expect(game.player_hand.cards.last).to eq(extra)
-      expect(game.state).to eq(:player_turn)
-    end
-
-    it "finishes with a dealer win when the player busts" do
-      game = started_game(card(10), card(9), card(6), card(8), card("K"))
-      game.hit!
-
-      expect(game.outcome).to eq(:dealer_win)
-    end
+    expect { game.start! }.to raise_error(Games::Blackjack::Game::InvalidActionError)
   end
 
-  describe "#stand!" do
-    it "lets the dealer draw until 17 or higher" do
-      dealer_hit = card(5)
-      game = started_game(card(10), card(10), card(9), card(6), dealer_hit)
-      game.stand!
+  it "hits and continues unless the player busts" do
+    extra = card(3)
+    game = started_game(card(10), card(9), card(2), card(8), extra)
+    game.hit!
 
-      expect(game.dealer_hand.cards.last).to eq(dealer_hit)
-      expect(game.dealer_hand.total).to eq(21)
-      expect(game).to be_finished
-    end
+    expect(game.player_hand.cards.last).to eq(extra)
+    expect(game.state).to eq(:player_turn)
 
-    it "finishes with a player win when the dealer busts" do
-      game = started_game(card(10), card(10), card(9), card(6), card("K"))
-      game.stand!
+    bust = started_game(card(10), card(9), card(6), card(8), card("K"))
+    bust.hit!
 
-      expect(game.outcome).to eq(:player_win)
-    end
+    expect(bust.outcome).to eq(:dealer_win)
   end
 
-  describe "#legal_actions" do
-    it "delegates to the rules during the player turn and is empty otherwise" do
-      game = started_game(card(10), card(9), card(7), card(6))
-      expect(game.legal_actions).to eq([ :hit, :stand ])
+  it "stands so the dealer draws to 17" do
+    dealer_hit = card(5)
+    twenty_one = started_game(card(10), card(10), card(9), card(6), dealer_hit)
+    twenty_one.stand!
 
-      finished = started_game(card("A"), card(9), card("K"), card(7))
-      expect(finished.legal_actions).to eq([])
-    end
+    expect(twenty_one.dealer_hand.cards.last).to eq(dealer_hit)
+    expect(twenty_one.dealer_hand.total).to eq(21)
+    expect(twenty_one).to be_finished
+
+    bust = started_game(card(10), card(10), card(9), card(6), card("K"))
+    bust.stand!
+
+    expect(bust.outcome).to eq(:player_win)
   end
 
-  describe "#remaining_cards" do
-    it "returns the undealt cards" do
-      leftover = card(2)
-      game = started_game(card(10), card(9), card(7), card(6), leftover)
+  it "hides the hole card until the round finishes" do
+    upcard = card(10)
+    hole = card(7)
+    game = started_game(card(10, suit: "hearts"), upcard, card(8), hole)
 
-      expect(game.remaining_cards).to eq([ leftover ])
-    end
-  end
+    expect(game.visible_dealer_cards).to eq([ upcard ])
 
-  describe "#visible_dealer_cards" do
-    it "hides the hole card until the round finishes" do
-      upcard = card(10)
-      hole = card(7)
-      game = started_game(card(10, suit: "hearts"), upcard, card(8), hole)
+    game.stand!
 
-      expect(game.visible_dealer_cards).to eq([ upcard ])
-
-      game.stand!
-
-      expect(game.visible_dealer_cards).to eq([ upcard, hole ])
-    end
+    expect(game.visible_dealer_cards).to eq([ upcard, hole ])
   end
 end

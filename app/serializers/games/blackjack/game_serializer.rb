@@ -40,7 +40,7 @@ module Games
         end
 
         Game.restore(
-          deck: Deck.new(cards: build_cards.call(data.fetch("remaining_cards"))),
+          shoe: Shoe.new(cards: build_cards.call(data.fetch("remaining_cards"))),
           player_hand: Hand.new(build_cards.call(data.fetch("player_cards"))),
           dealer_hand: Hand.new(build_cards.call(data.fetch("dealer_cards"))),
           state: data.fetch("state").to_sym,

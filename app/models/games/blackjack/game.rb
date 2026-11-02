@@ -2,24 +2,24 @@
 
 module Games
   module Blackjack
-    # Assumes the injected deck has enough cards for the round.
-    # If the deck runs out mid-deal, Game does not roll back partial hands.
+    # Assumes the injected shoe has enough cards for the round.
+    # If the shoe runs out mid-deal, Game does not roll back partial hands.
     class Game
       class InvalidActionError < StandardError; end
 
       attr_reader :player_hand, :dealer_hand, :state, :outcome
 
-      def initialize(deck: nil, player_hand: nil, dealer_hand: nil, state: :pending, outcome: nil)
-        @deck = deck || Deck.new.tap(&:shuffle!)
+      def initialize(shoe: nil, player_hand: nil, dealer_hand: nil, state: :pending, outcome: nil)
+        @shoe = shoe || Shoe.new
         @player_hand = player_hand || Hand.new
         @dealer_hand = dealer_hand || Hand.new
         @state = state
         @outcome = outcome
       end
 
-      def self.restore(deck:, player_hand:, dealer_hand:, state:, outcome:)
+      def self.restore(shoe:, player_hand:, dealer_hand:, state:, outcome:)
         new(
-          deck: deck,
+          shoe: shoe,
           player_hand: player_hand,
           dealer_hand: dealer_hand,
           state: state,
@@ -31,8 +31,8 @@ module Games
         require_state!(:pending)
 
         2.times do
-          @player_hand.add_card(@deck.draw)
-          @dealer_hand.add_card(@deck.draw)
+          @player_hand.add_card(@shoe.draw)
+          @dealer_hand.add_card(@shoe.draw)
         end
 
         if @player_hand.blackjack? || @dealer_hand.blackjack?
@@ -45,14 +45,14 @@ module Games
       def hit!
         require_player_action!(:hit)
 
-        @player_hand.add_card(@deck.draw)
+        @player_hand.add_card(@shoe.draw)
         finish!(:dealer_win) if @player_hand.busted?
       end
 
       def stand!
         require_player_action!(:stand)
 
-        @dealer_hand.add_card(@deck.draw) while Rules.dealer_hits?(@dealer_hand)
+        @dealer_hand.add_card(@shoe.draw) while Rules.dealer_hits?(@dealer_hand)
         finish!(Rules.outcome(@player_hand, @dealer_hand))
       end
 
@@ -74,7 +74,7 @@ module Games
       end
 
       def remaining_cards
-        @deck.cards
+        @shoe.cards
       end
 
       private
