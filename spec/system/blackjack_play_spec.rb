@@ -50,4 +50,25 @@ RSpec.describe "Playing blackjack", type: :system do
     expect(page).to have_no_css(".card--facedown")
     expect(page).to have_no_button("Hit")
   end
+
+  it "starts a new sitting from New game and resets totals" do
+    deal("A", 9, "K", 7)
+
+    expect(page).to have_css(".banner", text: "You win")
+    expect(page).to have_css(".totals__wins", text: "1")
+    expect(page).to have_button("Deal again")
+    expect(page).to have_button("New game")
+    first_path = page.current_path
+
+    stub_shoe(10, 9, 7, 6)
+    click_button "New game"
+
+    expect(page).not_to have_current_path(first_path)
+    expect(page).to have_css(".card--facedown")
+    expect(page).to have_no_css(".banner")
+    expect(page).to have_css(".card__rank", exact_text: "10")
+    expect(page).to have_css(".card__rank", exact_text: "7")
+    expect(page).to have_css(".totals__wins", text: "0")
+    expect(page).to have_css(".totals__losses", text: "0")
+  end
 end
