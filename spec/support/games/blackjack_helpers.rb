@@ -24,10 +24,12 @@ module Games
       round
     end
 
-    def started_game(*cards)
-      game = Games::Blackjack::Game.new(shoe: shoe_with(*cards))
-      game.deal!
-      game
+    def stub_shoe(*ranks)
+      allow(Games::Blackjack::Shoe).to receive(:new).and_wrap_original do |original, **kwargs|
+        next original.call(**kwargs) unless kwargs.empty?
+
+        original.call(cards: ranks.map { |rank| rank.is_a?(Games::Blackjack::Card) ? rank : card(rank) })
+      end
     end
   end
 end

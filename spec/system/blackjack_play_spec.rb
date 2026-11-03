@@ -4,11 +4,7 @@ require "rails_helper"
 
 RSpec.describe "Playing blackjack", type: :system do
   def deal(*ranks)
-    allow(Games::Blackjack::Game).to receive(:new).and_wrap_original do |original, **kwargs|
-      next original.call(**kwargs) unless kwargs.empty?
-
-      original.call(shoe: shoe_with(*ranks.map { |rank| card(rank) }))
-    end
+    stub_shoe(*ranks)
 
     visit root_path
     click_button "Deal"

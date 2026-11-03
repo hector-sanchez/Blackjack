@@ -12,8 +12,8 @@ module Blackjack
     end
 
     def show
-      game = Games::Blackjack::SessionManager.load(@game_session)
-      @game = Games::Blackjack::GameSerializer.new(game).to_public_h
+      round = Games::Blackjack::SessionManager.load(@game_session)
+      @game = Games::Blackjack::PlayView.new(round).to_public_h
     end
 
     def hit

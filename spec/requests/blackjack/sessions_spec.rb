@@ -4,15 +4,9 @@ require "rails_helper"
 
 RSpec.describe "Blackjack::Sessions", type: :request do
   def persist_owned_game(*ranks)
-    game = started_game(*ranks.map { |rank| card(rank) })
-
+    stub_shoe(*ranks)
     post blackjack_sessions_path
-    game_session = GameSession.last
-    game_session.update!(
-      state: Games::Blackjack::GameSerializer.new(game).to_snapshot_h,
-      status: "active"
-    )
-    game_session
+    GameSession.last
   end
 
   describe "POST /blackjack/sessions" do
@@ -67,7 +61,7 @@ RSpec.describe "Blackjack::Sessions", type: :request do
 
     it "does not show a session the player does not own" do
       persist_owned_game(10, 9, 7, 6, 2)
-      other = GameSession.create!(state: { "any" => "payload" }, status: "active")
+      other = GameSession.create!(shoe_cards: [], status: "active")
 
       get blackjack_session_path(other)
 
@@ -126,7 +120,7 @@ RSpec.describe "Blackjack::Sessions", type: :request do
   describe "invalid actions" do
     it "does not let a player hit or stand on another player's session" do
       persist_owned_game(10, 9, 7, 6, 4)
-      other = GameSession.create!(state: { "any" => "payload" }, status: "active")
+      other = GameSession.create!(shoe_cards: [], status: "active")
 
       post hit_blackjack_session_path(other)
       expect(response).to have_http_status(:not_found)
@@ -157,7 +151,7 @@ RSpec.describe "Blackjack::Sessions", type: :request do
       game_session = persist_owned_game(10, 9, 7, 6)
 
       expect { post deal_blackjack_session_path(game_session) }
-        .to raise_error(Games::Blackjack::Game::InvalidActionError)
+        .to raise_error(Games::Blackjack::SessionManager::InvalidActionError)
     end
   end
 end
