@@ -1,9 +1,7 @@
 <div class="table">
   <header class="table__header">
     <h1>Blackjack</h1>
-    <% if @game[:outcome] %>
-      <p class="banner"><%= outcome_label(@game[:outcome]) %></p>
-    <% end %>
+    <p class="banner"><%= @game[:outcome] && outcome_label(@game[:outcome]) %></p>
     <dl class="totals">
       <div>
         <dt>Wins</dt>
@@ -17,12 +15,10 @@
         <dt>Pushes</dt>
         <dd class="totals__pushes"><%= @totals.pushes %></dd>
       </div>
-      <% if @totals.win_rate %>
-        <div>
-          <dt>Win rate</dt>
-          <dd class="totals__rate"><%= (@totals.win_rate * 100).round(1) %>%</dd>
-        </div>
-      <% end %>
+      <div>
+        <dt>Win rate</dt>
+        <dd class="totals__rate"><%= @totals.win_rate ? "#{(@totals.win_rate * 100).round(1)}%" : "—" %></dd>
+      </div>
     </dl>
   </header>
 

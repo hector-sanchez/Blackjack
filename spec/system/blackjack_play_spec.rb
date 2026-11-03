@@ -65,7 +65,7 @@ RSpec.describe "Playing blackjack", type: :system do
 
     expect(page).not_to have_current_path(first_path)
     expect(page).to have_css(".card--facedown")
-    expect(page).to have_no_css(".banner")
+    expect(page).to have_css(".banner:empty", visible: :hidden)
     expect(page).to have_css(".card__rank", exact_text: "10")
     expect(page).to have_css(".card__rank", exact_text: "7")
     expect(page).to have_css(".totals__wins", text: "0")
