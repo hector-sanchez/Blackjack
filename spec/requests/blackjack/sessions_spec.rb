@@ -57,6 +57,8 @@ RSpec.describe "Blackjack::Sessions", type: :request do
       expect(response.body).to include(">7<")
       expect(response.body).not_to include("player_win")
       expect(response.body).not_to include("Face down")
+      expect(response.body).to include("Wins")
+      expect(response.body).to include(">1<")
     end
 
     it "does not show a session the player does not own" do

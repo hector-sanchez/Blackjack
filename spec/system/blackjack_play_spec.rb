@@ -30,6 +30,7 @@ RSpec.describe "Playing blackjack", type: :system do
     expect(page).to have_no_css(".card--facedown")
     expect(page).to have_no_button("Hit")
     expect(page).to have_button("Deal again")
+    expect(page).to have_css(".totals__wins", text: "1")
 
     click_button "Deal again"
 
@@ -38,6 +39,7 @@ RSpec.describe "Playing blackjack", type: :system do
     expect(page).to have_css(".card__rank", exact_text: "10")
     expect(page).to have_css(".card__rank", exact_text: "5")
     expect(page).to have_no_css(".card__rank", exact_text: "2")
+    expect(page).to have_css(".totals__wins", text: "1")
   end
 
   it "announces a dealer blackjack without a face-down card" do

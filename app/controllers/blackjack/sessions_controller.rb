@@ -14,6 +14,7 @@ module Blackjack
     def show
       round = Games::Blackjack::SessionManager.load(@game_session)
       @game = Games::Blackjack::PlayView.new(round).to_public_h
+      @totals = Games::Blackjack::SessionTotals.new(@game_session)
     end
 
     def hit

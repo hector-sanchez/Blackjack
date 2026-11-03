@@ -26,6 +26,28 @@ body {
   opacity: 0.8;
 }
 
+.totals {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  margin: 1rem 0 0;
+}
+
+.totals div {
+  margin: 0;
+}
+
+.totals dt {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.totals dd {
+  margin: 0.15rem 0 0;
+  font-size: 1.15rem;
+}
+
 .banner {
   display: inline-block;
   margin: 0.75rem 0 0;
