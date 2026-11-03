@@ -53,6 +53,7 @@ module Games
             when :deal
               raise InvalidActionError unless round.finished?
 
+              shoe = Shoe.new if shoe.remaining < 4
               round = Round.new(shoe: shoe)
               round.start!
               insert_round!(session, round)

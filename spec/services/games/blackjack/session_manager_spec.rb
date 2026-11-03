@@ -124,6 +124,20 @@ RSpec.describe Games::Blackjack::SessionManager do
       expect(restored.dealer_hand.cards).to eq([ card(8), card(6) ])
     end
 
+    it "opens a new shoe when fewer than four cards remain" do
+      session = start_with("A", 9, "K", 7)
+      expect(session.reload.shoe_cards).to eq([])
+
+      stub_shoe(10, 9, 7, 6)
+      described_class.deal!(session)
+
+      restored = described_class.load(session.reload)
+      expect(session.game_rounds.count).to eq(2)
+      expect(session.round_hands.where.not(outcome: nil).count).to eq(1)
+      expect(restored.player_hand.cards).to eq([ card(10), card(7) ])
+      expect(restored.dealer_hand.cards).to eq([ card(9), card(6) ])
+    end
+
     it "does not insert a round while the player is still acting" do
       session = start_with(10, 9, 7, 6)
 

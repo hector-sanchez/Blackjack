@@ -117,6 +117,23 @@ RSpec.describe "Blackjack::Sessions", type: :request do
       expect(response.body).not_to include(">6<")
       expect(response.body).not_to include("You win")
     end
+
+    it "opens a new shoe on the same sitting when the leftover shoe is empty" do
+      game_session = persist_owned_game("A", 9, "K", 7)
+      stub_shoe(10, 8, 5, 6)
+
+      expect { post deal_blackjack_session_path(game_session) }
+        .not_to change(GameSession, :count)
+
+      expect(response).to redirect_to(blackjack_session_path(game_session))
+
+      get blackjack_session_path(game_session)
+      expect(response.body).to include(">10<")
+      expect(response.body).to include(">5<")
+      expect(response.body).to include(">8<")
+      expect(response.body).to include("Face down")
+      expect(response.body).to include(">1<")
+    end
   end
 
   describe "invalid actions" do
