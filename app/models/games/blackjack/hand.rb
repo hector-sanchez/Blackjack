@@ -49,7 +49,17 @@ module Games
       end
 
       def value(card)
+        # I installed byebug and realized my mistake:
+        # I was treating it like an 'if' statement and OR suit == "....".
+        # case statement is evaluating rank. So, `when 4 || (suit == "hearts" || suit == "diamonds")` makes no sense.
+        # I needed to exit early under those conditions or:
+        # `when 4 then if card.suit == "hearts" || card.suit == "diamonds" then 8 else card.rank end`
+        # I chose the former.
+
+        return 8 if card.rank == 4 && (card.suit == "hearts" || card.suit == "diamonds")
+
         case card.rank
+        when 4 then if card.suit == "hearts" || card.suit == "diamonds" then 8 else card.rank end
         when "A" then 11
         when "J", "Q", "K" then 10
         else card.rank

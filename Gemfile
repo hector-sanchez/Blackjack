@@ -32,6 +32,7 @@ group :development, :test do
   gem "rspec-rails"
 
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
+  gem "pry-byebug"
 
   # Security checks
   gem "bundler-audit", require: false

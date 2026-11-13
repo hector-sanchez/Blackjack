@@ -49,5 +49,15 @@ RSpec.describe Games::Blackjack::Hand do
         expect(hand.busted?).to eq(scenario[:busted])
       end
     end
+
+    it "scores a red four as eight" do
+      hearts = described_class.new([ card(4, suit: "hearts"), card(10) ])
+      diamonds = described_class.new([ card(4, suit: "diamonds"), card(9) ])
+
+      expect(hearts.total).to eq(18)
+      expect(hearts).not_to be_busted
+      expect(diamonds.total).to eq(17)
+      expect(diamonds).not_to be_soft
+    end
   end
 end
